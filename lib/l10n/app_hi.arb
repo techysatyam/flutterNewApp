@@ -1,0 +1,23 @@
+{
+  "letsGetYouLoggedIn": "आइए आपको लॉग इन करवाते हैं",
+  "userId": "यूजर आईडी",
+  "pleaseEnterValidUserId": "कृपया मान्य यूजर आईडी दर्ज करें",
+  "password": "पासवर्ड",
+  "pleaseEnterValidPass": "कृपया मान्य पासवर्ड दर्ज करें",
+  "enterCaptcha": "कैप्चा दर्ज करें",
+  "remember": "याद रखें",
+  "forgotPassQ": "पासवर्ड भूल गए?",
+  "forgotPass": "पासवर्ड भूल गए",
+  "login": "लॉगिन",
+  "verifyOtp": "ओटीपी सत्यापित करें",
+  "enterEmailOrMobile": "ईमेल/मोबाइल नंबर दर्ज करें",
+  "sendOtp": "ओटीपी भेजें",
+  "createNewPass": "नया पासवर्ड बनाएं",
+  "enterNewPass": "नया पासवर्ड दर्ज करें",
+  "confirmPass": "पासवर्ड की पुष्टि करें",
+  "save": "सहेजें",
+  "search": "खोजें",
+  "price": "₹ {amount}",
+  "hassleFreeBillPayments": "आपकी सुविधा के लिए झंझट-मुक्त\nबिल भुगतान",
+  "hassleFreeBharatBillPayments": "कहीं भी, कभी भी झंझट-मुक्त भारत बिल भुगतान का अनुभव\nकरें—तेज़, सुरक्षित और समय बचाने वाला।"
+}

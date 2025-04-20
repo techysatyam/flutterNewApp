@@ -1,0 +1,23 @@
+{
+  "letsGetYouLoggedIn": "Let's get you logged In",
+  "userId": "User ID",
+  "pleaseEnterValidUserId": "Please enter valid User ID",
+  "password": "Password",
+  "pleaseEnterValidPass": "Please enter valid Password",
+  "enterCaptcha": "Enter Captcha",
+  "remember": "Remember",
+  "forgotPassQ": "Forgot Password?",
+  "forgotPass": "Forgot Password",
+  "login": "Login",
+  "verifyOtp": "Verify OTP",
+  "enterEmailOrMobile": "Enter Email/Mobile No.",
+  "sendOtp": "Send OTP",
+  "createNewPass": "Create New Password",
+  "enterNewPass": "Enter New Password",
+  "confirmPass": "Confirm Password",
+  "save": "Save",
+  "search": "Search",
+  "price": "₹ {amount}",
+  "hassleFreeBillPayments": "Hassle-Free Bill Payments\nat Your Convenience",
+  "hassleFreeBharatBillPayments": "Experience hassle-free Bharat bill payments anytime,\n anywhere—quick, secure, and time-saving."
+}
