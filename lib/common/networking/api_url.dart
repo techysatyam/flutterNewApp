@@ -1,8 +1,9 @@
 class ApiUrl {
   // BASE URL
-  static const String base = 'http://216.48.182.63'; // uat
+  // static const String base = 'http://216.48.182.63'; // uat
+  static const String base = 'http:420420'; // uat
   static String getApp = '$base/get-apps/';//get Api
-  static String download = 'http://216.48.182.63';//get Api
+  static String download = 'http:420420';//get Api
 
   // Auth URL
   static String login = '$base/api/auth/login';

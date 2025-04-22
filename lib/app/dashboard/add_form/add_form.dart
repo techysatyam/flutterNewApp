@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:newwhhrrr/app/dashboard/add_form/screenshot_viewer.dart';
-import 'package:newwhhrrr/app/dashboard/bloc/dashboard_bloc.dart';
-import 'package:newwhhrrr/common/utils/constants/enums.dart';
-import 'package:newwhhrrr/common/widgets/loaders/circular_loader.dart';
+import 'package:flutter_projects/app/dashboard/add_form/screenshot_viewer.dart';
+import 'package:flutter_projects/app/dashboard/bloc/dashboard_bloc.dart';
+import 'package:flutter_projects/common/utils/constants/enums.dart';
+import 'package:flutter_projects/common/widgets/loaders/circular_loader.dart';
 
 import '../../../common/utils/constants/colors.dart';
 import '../../../common/utils/constants/image_strings.dart';

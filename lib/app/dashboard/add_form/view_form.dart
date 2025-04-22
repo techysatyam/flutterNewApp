@@ -7,15 +7,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:newwhhrrr/app/dashboard/bloc/dashboard_bloc.dart';
-import 'package:newwhhrrr/common/networking/api_url.dart';
+import 'package:flutter_projects/app/dashboard/bloc/dashboard_bloc.dart';
+import 'package:flutter_projects/common/networking/api_url.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import '../../../common/utils/constants/colors.dart';
 import '../models/get_all_app_model.dart';
 import 'ImagePreviewScreen.dart';
+class AppChecker {
+  static const MethodChannel _channel = MethodChannel('apk_channel');
 
+  /// Checks if an app is installed using the specified package name.
+  static Future<bool> isAppInstalled(String packageName) async {
+    try {
+      final bool result = await _channel.invokeMethod(
+        'isAppInstalled',
+        {'packageName': packageName},
+      );
+      return result;
+    } catch (e) {
+      print('Error checking app: $e');
+      return false;
+    }
+  }
+}
 class ViewForm extends StatefulWidget {
   static const String route = '/view_form';
   final GetForm? getForm;
@@ -26,243 +42,64 @@ class ViewForm extends StatefulWidget {
   State<ViewForm> createState() => _ViewFormState();
 }
 
-class _ViewFormState extends State<ViewForm> {
+class _ViewFormState extends State<ViewForm> with WidgetsBindingObserver{
   bool _isDownloading = false;
   double _downloadProgress = 0.0;
   CancelToken? _cancelToken;
-
-
+  bool _isAppInstalled = false;
   static const platform = MethodChannel('apk_channel');
-
-  Future<bool> isAppInstalled(String packageName) async {
-    try {
-      final bool result = await platform.invokeMethod('isAppInstalled', {'package': packageName});
-      return result;
-    } catch (e) {
-      print('Error checking app installation: $e');
-      return false;
-    }
-  }
-  Future<void> installApkWithContentUri(String apkPath) async {
-    try {
-      print("Attempting to install APK from path: $apkPath");
-      await platform.invokeMethod('installApk', {'apkPath': apkPath});
-      print("Installation intent launched successfully");
-    } on PlatformException catch (e) {
-      print("Platform exception during installation: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Installation error: ${e.message}")),
-      );
-    }
-  }
-
-  Future<void> downloadAndInstallApk(
-      BuildContext context, String apkUrl, String appName) async {
-    try {
-      print("Starting download process for: $appName");
-      print("Download URL: $apkUrl");
-
-      // Get the download directory
-      final dir = await getExternalStorageDirectory();
-      if (dir == null) {
-        print("Could not access storage directory");
-        throw Exception("Could not access storage directory");
-      }
-
-      print("Storage directory: ${dir.path}");
-
-      // Create a unique filename with timestamp
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName =
-          '${appName.replaceAll(RegExp(r'[^\w\s-]'), '_')}_$timestamp.apk';
-      final filePath = '${dir.path}/$fileName';
-      _cancelToken = CancelToken();
-
-      if (mounted) {
-        setState(() {
-          _isDownloading = true;
-          _downloadProgress = 0.0;
-        });
-      }
-
-      print("Will save APK to: $filePath");
-
-      // Download the file
-      print("Starting download...");
-      final dio = Dio();
-      await dio.download(
-        apkUrl,
-        filePath,
-        cancelToken: _cancelToken,
-        onReceiveProgress: (received, total) {
-          if (total != -1) {
-            final progress = (received / total * 100).floor();
-            print("Download progress: $progress%");
-            setState(() {
-              _downloadProgress = received / total;
-            });
-          }
-        },
-      );
-      print("Download completed");
-
-      // Verify the file exists and has content
-      final file = File(filePath);
-      if (!await file.exists()) {
-        print("Downloaded file not found at: $filePath");
-        throw Exception("Downloaded file not found");
-      }
-
-      final fileSize = await file.length();
-      print("Downloaded file size: $fileSize bytes");
-
-      if (fileSize == 0) {
-        print("Downloaded file is empty");
-        throw Exception("Downloaded file is empty");
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Download complete. Installing..."),
-          duration: Duration(seconds: 3),
-        ),
-      );
-
-      // Install the APK using the platform channel
-      print("Initiating installation...");
-      await installApkWithContentUri(filePath);
-      print("Installation process completed");
-
-      // ✅ Check again if the app is now installed, and update UI
-      await checkIfAppInstalled(); // <-- this is the key addition
-
-    } catch (e) {
-      if (e is DioError && CancelToken.isCancel(e)) {
-        debugPrint("Download cancelled");
-      } else {
-        print("Error during download or installation: $e");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Error: $e"),
-            duration: Duration(seconds: 5),
-          ),
-        );
-      }
-    } finally {
-      setState(() {
-        _isDownloading = false;
-        _downloadProgress = 0.0;
-        _cancelToken = null;
-      });
-    }
-  }
-
-
-  Future<bool> checkAndRequestPermissions() async {
-    final DeviceInfoPlugin info = DeviceInfoPlugin();
-    final AndroidDeviceInfo androidInfo = await info.androidInfo;
-    debugPrint('Android version: ${androidInfo.version.release}');
-    final versionParts = androidInfo.version.release.split('.');
-    final int androidVersion = int.tryParse(versionParts.first) ?? 0;
-    // final int androidVersion = int.parse(androidInfo.version.release);
-
-    print("Checking permissions for Android $androidVersion");
-
-    // First check if we already have the permissions
-    bool hasStoragePermission = false;
-    bool hasInstallPermission = false;
-
-    if (androidVersion >= 13) {
-      // For Android 13+, we need media permissions
-      final photosStatus = await Permission.photos.status;
-      final videosStatus = await Permission.videos.status;
-      final audioStatus = await Permission.audio.status;
-
-      print(
-          "Current media permissions - Photos: $photosStatus, Videos: $videosStatus, Audio: $audioStatus");
-
-      hasStoragePermission = photosStatus.isGranted ||
-          videosStatus.isGranted ||
-          audioStatus.isGranted;
-    } else {
-      // For Android < 13, we need storage permission
-      final storageStatus = await Permission.storage.status;
-      print("Current storage permission: $storageStatus");
-      hasStoragePermission = storageStatus.isGranted;
-    }
-
-    // Check install packages permission
-    final installStatus = await Permission.requestInstallPackages.status;
-    print("Current install packages permission: $installStatus");
-    hasInstallPermission = installStatus.isGranted;
-
-    // If we don't have all required permissions, request them
-    if (!hasStoragePermission || !hasInstallPermission) {
-      print("Requesting missing permissions...");
-
-      if (androidVersion >= 13) {
-        // Request media permissions for Android 13+
-        final request = await [
-          Permission.photos,
-          Permission.videos,
-          Permission.audio,
-        ].request();
-
-        print("Media permission results: ${request.toString()}");
-        hasStoragePermission = request.values
-            .every((status) => status == PermissionStatus.granted);
-      } else {
-        // Request storage permission for Android < 13
-        final status = await Permission.storage.request();
-        print("Storage permission result: ${status.toString()}");
-        hasStoragePermission = status.isGranted;
-      }
-
-      // Request install packages permission if needed
-      if (!hasInstallPermission) {
-        final status = await Permission.requestInstallPackages.request();
-        print("Install packages permission result: ${status.toString()}");
-        hasInstallPermission = status.isGranted;
-      }
-    }
-
-    // If we still don't have all permissions, open app settings
-    if (!hasStoragePermission || !hasInstallPermission) {
-      print(
-          "Still missing permissions after request, opening app settings");
-      await openAppSettings();
-      return false;
-    }
-
-    print("All required permissions are granted");
-    return true;
-  }
-  bool isInstalled = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      checkIfAppInstalled();
-    });
+    WidgetsBinding.instance.addObserver(this);
+    checkAppInstalledStatus();
   }
 
-  Future<bool> checkIfAppInstalled() async {
-    final result = await isAppInstalled("com.example.targetapp");
-    setState(() {
-      isInstalled = result;
-    });
-    return result; // ✅ This is the new line you need to add
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
-  void openApp(String packageName) async {
-    try {
-      await platform.invokeMethod('openApp', {'package': packageName});
-    } catch (e) {
-      print("Failed to open app: $e");
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      checkAppInstalledStatus();
     }
   }
 
+  Future<bool> isAppInstalled(String packageName) async {
+    try {
+      final bool isInstalled =
+      await platform.invokeMethod('isAppInstalled', {'packageName': packageName});
+      print('Is installed: $packageName');
+      return isInstalled;
+    } catch (e) {
+      print("Error checking app installed: $e");
+      return false;
+    }
+  }
+
+  Future<bool> openApp(String packageName) async {
+    try {
+      final result = await platform.invokeMethod('openApp', {'packageName': packageName});
+      print("App launch result: $result");
+      return true;
+    } catch (e) {
+      print("Error launching app: $e");
+      return false;
+    }
+  }
+
+  Future<void> checkAppInstalledStatus() async {
+    final packageName = widget.getForm?.packageName ?? '';
+    print("Checking if package is installed: $packageName");
+    final installed = await isAppInstalled(packageName);
+    setState(() {
+      _isAppInstalled = installed;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -271,6 +108,116 @@ class _ViewFormState extends State<ViewForm> {
       builder: (context, state) {
         return LayoutBuilder(
           builder: (context, constraints) {
+            print("_isAppInstalled: $_isAppInstalled");
+
+            /// Installs an APK from the given content URI path.
+            Future<void> installApkWithContentUri(String apkPath) async {
+              try {
+                print("Attempting to install APK from path: $apkPath");
+                await platform.invokeMethod('installApk', {'apkPath': apkPath});
+                print("Installation intent launched successfully");
+              } catch (e) {
+                print("Platform exception during installation: $e");
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Installation error: ${e}")),
+                );
+              }
+            }
+
+            /// Downloads an APK from a URL and installs it.
+            Future<void> downloadAndInstallApk(
+                BuildContext context,
+                String apkUrl,
+                String appName,
+                ) async {
+              try {
+                print("Starting download for: $appName from $apkUrl");
+
+                final dir = await getExternalStorageDirectory();
+                if (dir == null) throw Exception("Could not access storage directory");
+
+                final timestamp = DateTime.now().millisecondsSinceEpoch;
+                final fileName = '${appName.replaceAll(RegExp(r'[^\w\s-]'), '_')}_$timestamp.apk';
+                final filePath = '${dir.path}/$fileName';
+                _cancelToken = CancelToken();
+
+                setState(() {
+                  _isDownloading = true;
+                  _downloadProgress = 0.0;
+                });
+
+                final dio = Dio();
+                await dio.download(
+                  apkUrl,
+                  filePath,
+                  cancelToken: _cancelToken,
+                  onReceiveProgress: (received, total) {
+                    if (total != -1) {
+                      setState(() {
+                        _downloadProgress = received / total;
+                      });
+                      print("Download progress: ${(received / total * 100).floor()}%");
+                    }
+                  },
+                );
+
+                final file = File(filePath);
+                if (!await file.exists() || await file.length() == 0) {
+                  throw Exception("Downloaded file is empty or not found");
+                }
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Download complete. Installing...")),
+                );
+
+                await installApkWithContentUri(filePath);
+                await Future.delayed(const Duration(seconds: 2));
+                await checkAppInstalledStatus();
+              } catch (e) {
+                if (e is DioError && CancelToken.isCancel(e)) {
+                  debugPrint("Download cancelled");
+                } else {
+                  print("Error during download/install: $e");
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Error: $e")),
+                  );
+                }
+              } finally {
+                setState(() {
+                  _isDownloading = false;
+                  _downloadProgress = 0.0;
+                  _cancelToken = null;
+                });
+              }
+            }
+
+            /// Checks and requests permissions needed for downloading and installing APKs.
+            Future<bool> checkAndRequestPermissions() async {
+              final androidInfo = await DeviceInfoPlugin().androidInfo;
+              final androidVersion = int.tryParse(androidInfo.version.release ?? '0') ?? 0;
+
+              bool hasStoragePermission = false;
+              bool hasInstallPermission = false;
+
+              if (androidVersion >= 13) {
+                final permissions = await [
+                  Permission.photos,
+                  Permission.videos,
+                  Permission.audio
+                ].request();
+
+                hasStoragePermission = permissions.values
+                    .every((status) => status.isGranted);
+              } else {
+                final status = await Permission.storage.request();
+                hasStoragePermission = status.isGranted;
+              }
+
+              final installStatus = await Permission.requestInstallPackages.request();
+              hasInstallPermission = installStatus.isGranted;
+
+              return hasStoragePermission && hasInstallPermission;
+            }
             // Determine if we're on a mobile device or web
             bool isMobile = constraints.maxWidth < 600;
             return Center(
@@ -310,7 +257,7 @@ class _ViewFormState extends State<ViewForm> {
                                                   BorderRadius.circular(15),
                                               image: DecorationImage(
                                                 image: NetworkImage(
-                                                  "${ApiUrl.base}${widget.getForm?.appIcon ?? '-'}",
+                                                  "${widget?.getForm?.appIcon}",
                                                 ),
                                                 fit: BoxFit.cover,
                                                 colorFilter: _isDownloading
@@ -454,73 +401,86 @@ class _ViewFormState extends State<ViewForm> {
                           ),
                         ),
                       ),
-                      Text('isInstalled = $isInstalled'),
                       // Install Button
                       Container(
-                        height: isMobile ? 40 : 50,
-                        width: isMobile ? double.infinity : 400,
-                        margin: EdgeInsets.symmetric(
-                          horizontal: isMobile ? 30 : 0,
-                          vertical: isMobile ? 8 : 16,
-                        ),
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            if (isInstalled) {
-                              openApp("com.example.targetapp");
-                            } else{
-                              if (_isDownloading) {
-                                _cancelToken?.cancel();
-                              } else {
-                                print("Install button pressed");
-                                final selectedData = widget.getForm;
-                                final apkUrl =
-                                    "${ApiUrl.download}${selectedData?.apkFile ?? ''}";
-                                print('APK URL: $apkUrl');
-
-                                // Check and request permissions
-                                final hasPermissions =
-                                    await checkAndRequestPermissions();
-
-                                if (hasPermissions) {
-                                  print(
-                                      "Permissions granted, proceeding with download");
-                                  // Use appName instead of apkName since apkName doesn't exist in GetForm
-                                  await downloadAndInstallApk(context, apkUrl,
-                                      selectedData?.appName ?? 'app');
+                          height: isMobile ? 40 : 50,
+                          width: isMobile ? double.infinity : 400,
+                          margin: EdgeInsets.symmetric(
+                            horizontal: isMobile ? 30 : 0,
+                            vertical: isMobile ? 8 : 16,
+                          ),
+                          child:ElevatedButton(
+                            onPressed: ()
+                            async {
+                              if (_isAppInstalled) {
+                                // Open the app if installed
+                                final packageName = widget.getForm?.packageName; // Ensure `packageName` is available
+                                if (packageName != null && packageName.isNotEmpty) {
+                                  bool launched = await openApp(packageName);
+                                  if (!launched) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text("Could not open the app.")),
+                                    );
+                                  }
                                 } else {
-                                  print(
-                                      "Permissions not granted after settings");
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                          "Required permissions not granted. Please grant permissions in settings and try again."),
-                                      duration: Duration(seconds: 5),
-                                    ),
+                                    SnackBar(content: Text("Package name not found.")),
                                   );
                                 }
+                              } else {
+                                if (_isDownloading) {
+                                  _cancelToken?.cancel();
+                                } else {
+                                  print("Install button pressed");
+                                  final selectedData = widget.getForm;
+                                  final apkUrl = "${selectedData?.apkFile ?? ''}";
+                                  print('APK URL: $apkUrl');
+
+                                  final hasPermissions = await checkAndRequestPermissions();
+                                  if (hasPermissions) {
+                                    print("Permissions granted, proceeding with download");
+                                    await downloadAndInstallApk(
+                                      context,
+                                      apkUrl,
+                                      selectedData?.appName ?? 'app',
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "Required permissions not granted. Please grant permissions in settings and try again.",
+                                        ),
+                                        duration: Duration(seconds: 5),
+                                      ),
+                                    );
+                                  }
+                                }
                               }
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            // primary: Colors.blue.shade100,
-                            backgroundColor:
-                                AppColors.lightPrimaryColor.withOpacity(0.2),
-                            padding: EdgeInsets.symmetric(
-                              vertical: isMobile ? 8 : 16,
+                            },
+                            style: ElevatedButton.styleFrom(
+                              // primary: Colors.blue.shade100,
+                              backgroundColor:
+                              AppColors.lightPrimaryColor.withOpacity(0.2),
+                              padding: EdgeInsets.symmetric(
+                                vertical: isMobile ? 8 : 16,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
+                            child: Text(
+                              _isAppInstalled
+                                  ? "Open"
+                                  : _isDownloading
+                                  ? "Cancel"
+                                  : "Install",
+                              style: TextStyle(
+                                fontSize: isMobile ? 14 : 20,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87,
+                              ),
                             ),
-                          ),
-                          child: Text(
-                            isInstalled?'Open':_isDownloading ? "Cancel" :'Install',
-                            style: TextStyle(
-                              fontSize: isMobile ? 14 : 20,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ),
+                          )
                       ),
 
                       // Preview Images with Responsive Grid
@@ -759,7 +719,7 @@ class _ViewFormState extends State<ViewForm> {
               color: Colors.black.withOpacity(0.1),
             ),
             child: CachedNetworkImage(
-              imageUrl: "${ApiUrl.base}$imagePath",
+              imageUrl: "$imagePath",
               fit: BoxFit.cover,
               placeholder: (context, url) => Center(
                 child: CircularProgressIndicator(),

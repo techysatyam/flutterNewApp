@@ -1,0 +1,37 @@
+{
+  "status": 200,
+  "data": [
+    {
+      "id": 1,
+      "app_name": "Johnny Trigger",
+      "app_description": "Johnny Trigger is a parkour-themed runner  ",
+      "app_version": "1.0.1",
+      "apk_file": "https://github.com/techysatyam/basicCodeofFlutter/releases/download/alpha_apk_name/com-time-trigger-286-66196829-a86064df7a1aa4ed0fd6610490dff4bc.apk",
+      "app_icon": "https://play-lh.googleusercontent.com/pEH-pYG8v1WmNjk3haRt6bR4b6pUpvDsQLtVB-xsxt-SR9O6cX6OxnM0him5joRq8A=s48-rw",
+      "package_name": "com.time.trigger",
+      "category": "Utility",
+      "long_description": "Johnny Trigger is a parkour-themed runner from the creators of the legendary Shadow Fight series, \nand it's back in a remastered version! Become a real urban ninja, hide from your pursuers, and break free... now with updated style!",
+      "ratings": 4,
+      "rated": "4.5",
+      "screenshot1": "https://play-lh.googleusercontent.com/81Y86AXAxPZ2CtsrTRado2hRMDaqu5NICT0Kif-tEUHDe1mGXBecyB4HCQ9OqjVt8g=w526-h296-rw",
+      "screenshot2": "https://play-lh.googleusercontent.com/Of0jlWAgMw1LVp52YOqfYOoc39eZ4VN8hSbPl5kwnoDmu8XSZFdofP_cX5S6uRR0vJs=w526-h296-rw",
+      "screenshot3": "https://play-lh.googleusercontent.com/4D5ga37vdl07G2lqiE5Xyx-Yry1Xr4R43VVSuU-EE8PDkhd7_FLwWkxj_b-t-2EHTWWS=w526-h296-rw",
+      "screenshot4": "https://play-lh.googleusercontent.com/ptc_2gENUx-YTB3S9XOQEgHXLlSukrUKjQfUndDQQm0o6E0MzR-O-FMbOFbvt12JvtV2=w526-h296-rw",
+      "screenshot5": "https://play-lh.googleusercontent.com/ptc_2gENUx-YTB3S9XOQEgHXLlSukrUKjQfUndDQQm0o6E0MzR-O-FMbOFbvt12JvtV2=w526-h296-rw",
+      "size_mb": 117.8,
+      "developer_name": "Local Dev",
+      "privacy_policy_url": "https://example.com/privacy",
+      "website_url": "https://example.com",
+      "release_notes": "Initial Release",
+      "created_at": "2023-01-01T00:00:00.000Z"
+    }
+  ],
+  "message": "Success",
+  "pagination": {
+    "current_page": 1,
+    "total_pages": 1,
+    "total_apps": 1,
+    "has_next": false,
+    "has_previous": false
+  }
+}

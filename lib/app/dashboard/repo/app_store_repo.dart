@@ -2,15 +2,17 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
-import 'package:newwhhrrr/app/dashboard/models/get_all_app_model.dart';
-import 'package:newwhhrrr/common/networking/http_client.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_projects/app/dashboard/models/get_all_app_model.dart';
+import 'package:flutter_projects/common/networking/http_client.dart';
 
 import '../../../common/encryption/encrypt.dart';
 import '../../../common/networking/api_url.dart';
 import '../../../common/networking/network_exception.dart';
 
 class AppStoreRepo {
-  Future<Map<String, dynamic>> addForm({
+  Future<Map<String, dynamic>>
+  addForm({
     String? appName,
     String? appDescription,
     String? appVersion,
@@ -72,7 +74,8 @@ class AppStoreRepo {
     }
   }
 
-  Future<GetAllAppModel> getForm({
+
+  /*Future<GetAllAppModel> getForm({
     required int page,
     required String search,
   }) async {
@@ -112,6 +115,28 @@ class AppStoreRepo {
       return model;
     } catch (e) {
       rethrow;
+    }
+  }*/
+  Future<GetAllAppModel> getForm({
+    required int page,
+    String? search,
+  }) async {
+    try {
+      final jsonString = await rootBundle.loadString('assets/json/get_apps_mock.json');
+      final fullData = getAllAppModelFromJson(jsonString);
+
+      // Optional: Filter the list if a search term is passed
+      if (search != null && search.trim().isNotEmpty) {
+        final filteredData = fullData.copyWith(
+          data: fullData.data
+              ?.where((e) => e.appName?.toLowerCase().contains(search.toLowerCase()) ?? false)
+              .toList(),
+        );
+        return filteredData;
+      }
+      return fullData;
+    } catch (e) {
+      throw Exception("Failed to load local JSON: $e");
     }
   }
 }

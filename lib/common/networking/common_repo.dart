@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
-import 'package:newwhhrrr/common/networking/http_client.dart';
+import 'package:flutter_projects/common/networking/http_client.dart';
 
 import '../encryption/encrypt.dart';
 import 'network_exception.dart';

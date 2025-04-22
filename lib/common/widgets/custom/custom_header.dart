@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:newwhhrrr/common/utils/constants/colors.dart';
+import 'package:flutter_projects/common/utils/constants/colors.dart';
 
 import '../../utils/constants/image_strings.dart';
 import '../button/custom_button.dart';

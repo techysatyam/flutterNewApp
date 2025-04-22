@@ -47,7 +47,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             const Text(
-              'Welcome to Getepay App Store',
+              'Welcome to Dylecto',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ],

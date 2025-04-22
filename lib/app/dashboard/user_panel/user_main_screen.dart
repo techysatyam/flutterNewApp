@@ -31,7 +31,7 @@ class MainScreenUser extends StatelessWidget {
                   // const Spacer(),
                   SizedBox(width: 20,),
                   Text(
-                    'Getepay App Store',
+                    'Dylecto',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
@@ -65,11 +65,11 @@ class MainScreenUser extends StatelessWidget {
                   ),
                   children: [
                     TextSpan(
-                      text: "Getepay",
+                      text: "TechnoGracia Corp.",
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.lightPrimaryColor,
+                        color: AppColors.lightTextColor,
                       ),
                     ),
                   ],

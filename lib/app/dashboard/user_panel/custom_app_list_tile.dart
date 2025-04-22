@@ -2,9 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:newwhhrrr/app/dashboard/add_form/ImagePreviewScreen.dart';
-import 'package:newwhhrrr/app/dashboard/bloc/dashboard_bloc.dart';
-import 'package:newwhhrrr/common/networking/api_url.dart';
+import 'package:flutter_projects/app/dashboard/add_form/ImagePreviewScreen.dart';
+import 'package:flutter_projects/app/dashboard/bloc/dashboard_bloc.dart';
+import 'package:flutter_projects/common/networking/api_url.dart';
 
 import '../add_form/view_form.dart';
 import '../models/get_all_app_model.dart';
@@ -71,11 +71,18 @@ class _AppListTileState extends State<AppListTile> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      "${ApiUrl.download}${app.appIcon}",
+                    child:app.appIcon?.startsWith('assets/') == true
+                        ? Image.asset(
+                      app.appIcon!,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
-                    ),
+                    )
+                        : Image.network(
+                      '${app.appIcon}',
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+                    )
+
                   ),
                 ),
 
@@ -116,10 +123,10 @@ class _AppListTileState extends State<AppListTile> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         children: [
           _infoCard(title: 'About', content: app.appDescription ?? 'No description'),
-          _imageCard('${ApiUrl.download}${app.screenshot1}'),
-          _imageCard('${ApiUrl.download}${app.screenshot2}'),
-          _imageCard('${ApiUrl.download}${app.screenshot3}'),
-          _imageCard('${ApiUrl.download}${app.screenshot4}'),
+          _imageCard('${app.screenshot1}'),
+          _imageCard('${app.screenshot2}'),
+          _imageCard('${app.screenshot3}'),
+          _imageCard('${app.screenshot4}'),
         ],
       ),
     );
@@ -160,12 +167,19 @@ class _AppListTileState extends State<AppListTile> {
       child: Card(
         clipBehavior: Clip.hardEdge,
         child: url != null
-            ? Image.network(
+            ? (url.startsWith('assets/')
+            ? Image.asset(
           url,
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
         )
+            : Image.network(
+          url,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
+        ))
             : const Icon(Icons.image),
+
       ),
     );
   }

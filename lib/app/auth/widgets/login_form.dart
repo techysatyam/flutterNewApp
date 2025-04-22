@@ -1,5 +1,5 @@
 import 'dart:math';
-import 'package:newwhhrrr/common/utils/constants/sizes.dart';
+import 'package:flutter_projects/common/utils/constants/sizes.dart';
 
 import '../../../common/utils/constants/enums.dart';
 import '../../../common/utils/constants/image_strings.dart';

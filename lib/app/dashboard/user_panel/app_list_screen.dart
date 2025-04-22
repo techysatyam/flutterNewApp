@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:newwhhrrr/app/dashboard/bloc/dashboard_bloc.dart';
-import 'package:newwhhrrr/common/widgets/custom/custom_search_bar.dart';
+import 'package:flutter_projects/app/dashboard/bloc/dashboard_bloc.dart';
+import 'package:flutter_projects/common/widgets/custom/custom_search_bar.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../../common/utils/constants/colors.dart';

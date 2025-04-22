@@ -4,10 +4,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:newwhhrrr/app/dashboard/bloc/dashboard_bloc.dart';
-import 'package:newwhhrrr/app/dashboard/models/get_all_app_model.dart';
-import 'package:newwhhrrr/common/networking/api_url.dart';
-import 'package:newwhhrrr/common/utils/formatters/formatter.dart';
+import 'package:flutter_projects/app/dashboard/bloc/dashboard_bloc.dart';
+import 'package:flutter_projects/app/dashboard/models/get_all_app_model.dart';
+import 'package:flutter_projects/common/networking/api_url.dart';
+import 'package:flutter_projects/common/utils/formatters/formatter.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -197,7 +197,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         final rowId = (row.getCells()[0].value);
                         final index = int.parse(rowId) - 1;
                         final selectedData = state.getAllAppModel!.data![index % 10];
-                        final apkUrl = "${ApiUrl.download}${selectedData.apkFile ?? ''}";
+                        // final apkUrl = "${ApiUrl.download}${selectedData.apkFile ?? ''}";
+                        final apkUrl = "https://drive.google.com/file/d/1XekJxjM8PVnIrlii42R4qRajT1qoF1Aq/view?usp=drivesdk";
                         print('APK URL ---> ${apkUrl}');
 
                         // Step 1: Check and request storage permission
@@ -214,8 +215,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         }
                       },
                     )
-
-
                             ],
                           ),
                           columns: column,

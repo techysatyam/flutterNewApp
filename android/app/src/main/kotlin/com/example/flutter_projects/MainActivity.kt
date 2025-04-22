@@ -1,8 +1,7 @@
 package com.example.flutter_projects
 
-import android.content.Context
-import android.content.pm.PackageManager
 import android.content.Intent
+import android.content.pm.PackageManager // ✅ Fix missing import
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -55,15 +54,36 @@ class MainActivity : FlutterActivity() {
                 }
 
                 "isAppInstalled" -> {
-                    val packageName = call.argument<String>("package")
-                    val isInstalled = isPackageInstalled(packageName ?: "", applicationContext)
-                    result.success(isInstalled)
+                    val packageName = call.argument<String>("packageName")
+                    val pm = this.packageManager
+                    try {
+                        pm.getPackageInfo(packageName!!, 0)
+                        result.success(true)
+                    } catch (e: PackageManager.NameNotFoundException) {
+                        result.success(false)
+                    }
                 }
 
                 "openApp" -> {
-                    val packageName = call.argument<String>("package")
-                    openInstalledApp(packageName ?: "", applicationContext)
-                    result.success(null)
+                    val packageName = call.argument<String>("packageName")
+                    if (packageName.isNullOrEmpty()) {
+                        result.error("INVALID_PACKAGE", "Package name is null or empty", null)
+                        return@setMethodCallHandler
+                    }
+
+                    try {
+                        val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+                        if (launchIntent != null) {
+                            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            startActivity(launchIntent)
+                            result.success("App launched")
+                        } else {
+                            result.error("NOT_INSTALLED", "App is not installed", null)
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error launching app: ${e.message}", e)
+                        result.error("LAUNCH_ERROR", e.message, null)
+                    }
                 }
 
                 else -> {
@@ -77,53 +97,27 @@ class MainActivity : FlutterActivity() {
     private fun installApk(file: File) {
         Log.d(TAG, "Installing APK from file: ${file.absolutePath}")
         val context = this
-        val intent = Intent(Intent.ACTION_VIEW)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-
-        val apkUri: Uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Log.d(TAG, "Using FileProvider for Android N and above")
-            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-        } else {
-            Log.d(TAG, "Using direct file URI for Android below N")
-            Uri.fromFile(file)
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+            data = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+            } else {
+                Uri.fromFile(file)
+            }
+            setDataAndType(data, "application/vnd.android.package-archive")
         }
 
-        Log.d(TAG, "APK URI: $apkUri")
-        intent.setDataAndType(apkUri, "application/vnd.android.package-archive")
-
         try {
-            Log.d(TAG, "Starting installation activity")
             context.startActivity(intent)
-            Log.d(TAG, "Installation activity started successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Error starting installation activity: ${e.message}", e)
-            // Try to open settings to enable unknown sources
             try {
-                Log.d(TAG, "Attempting to open security settings")
                 val settingsIntent = Intent(android.provider.Settings.ACTION_SECURITY_SETTINGS)
                 settingsIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 context.startActivity(settingsIntent)
             } catch (e2: Exception) {
                 Log.e(TAG, "Error opening security settings: ${e2.message}", e2)
             }
-        }
-    }
-
-    private fun isPackageInstalled(packageName: String, context: Context): Boolean {
-        return try {
-            context.packageManager.getPackageInfo(packageName, 0)
-            true
-        } catch (e: PackageManager.NameNotFoundException) {
-            false
-        }
-    }
-
-    private fun openInstalledApp(packageName: String, context: Context) {
-        val launchIntent = context.packageManager.getLaunchIntentForPackage(packageName)
-        if (launchIntent != null) {
-            context.startActivity(launchIntent)
-        } else {
-            Log.e(TAG, "Unable to launch app: $packageName")
         }
     }
 }

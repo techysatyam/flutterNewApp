@@ -9,8 +9,8 @@ import '../helpers/helper_functions.dart';
 
 class AppColors {
   //===========>>> App Theme Light Colors <<<=====================
-  static const Color lightPrimaryColor = Color(0xFF9C88FB);
-  static const Color bgMainColor = Color(0xFFE6E6FA);
+  static const Color lightPrimaryColor = Color(0xFFFEBD38)/*Color(0xFF9C88FB)*/;
+  static const Color bgMainColor = Color(0xFFFFD572)/*Color(0xFFE6E6FA)*/;
   static const Color lightSecondaryColor = Color(0xFFFEBD38);
   static const Color lightTextColor = Color(0xFF1E265E);
   static const Color lightParagraphColor = Color(0xFF9FA2B8);
