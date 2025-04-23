@@ -88,7 +88,7 @@ class _MainLayoutState extends State<MainLayout> {
                           ),
                           children: [
                             TextSpan(
-                              text: "Getepay",
+                              text: "TEchnoGracia Corp.",
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
@@ -265,14 +265,14 @@ class _SidebarState extends State<Sidebar> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Image.asset(
-                        AppImages.getepayLogo,
+                        AppImages.dylectoLogo,
                         height: 30,
                         width: 30,
                         // fit: BoxFit.contain,
                       ),
                       RichText(
                         text: TextSpan(
-                          text: " Getepay",
+                          text: " Dylecto",
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,

@@ -11,7 +11,7 @@ class AppImages {
   static String searchIcon = '$root/search_icon.svg';
   static String edit = '$root/edit.svg';
   static String delete = '$root/delete.svg';
-  static String getepayLogo = '$root/getepay_app_logo.png';
+  static String dylectoLogo = '$root/dylecto_app_logo.png';
   static String dashBoardIcon = '$root/dashboard_icon.svg';
   static String viewIcon = '$root/gray_eye.svg';
   static String customLoader = '$root1/v2.1.gif';
